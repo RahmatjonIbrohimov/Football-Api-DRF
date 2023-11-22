@@ -1,3 +1,4 @@
+from django.http import JsonResponse
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -36,16 +37,39 @@ class FootballMatchesAPIView(APIView):
 
 class FootballFinishedMatchAPIView(APIView):
     def get(self, request):
-        driver = webdriver.Chrome()
-        try:
-            driver.get("https://www.flashscore.com/football/")
+        # JSON formatida javobni qaytarish
 
-            soup = BeautifulSoup(driver.page_source, 'html.parser')
-            matches = soup.find_all('div', class_='event__match--last')
-            print(matches)
-            result_data = []
+        chrome_options = Options()
+        chrome_options.add_argument("--headless")
+        driver = webdriver.Chrome(options=chrome_options)
+        driver.get('https://www.flashscore.com/football/')
 
-            return Response(result_data, status=status.HTTP_200_OK)
+        html = driver.page_source
+        soup = BeautifulSoup(html, 'html.parser')
 
-        finally:
-            driver.quit()
+        old_games = []
+
+        game_elements = soup.find_all('div', class_='event__match--last')
+
+        for game_element in game_elements:
+            teams_element = game_element.find_all('div', class_='event__participant')
+            team1 = teams_element[0].text.strip()
+            team2 = teams_element[1].text.strip()
+
+            score_home = game_element.find('div', class_='event__score event__score--home')
+            score1 = '' if not score_home else score_home.text.strip()
+
+            score_away = game_element.find('div', class_='event__score event__score--away')
+            score2 = score_away.text.strip()
+
+            game_info = {
+                'team1': team1,
+                'team2': team2,
+                'score1': score1,
+                'score2': score2,
+            }
+
+            old_games.append(game_info)
+
+        driver.quit()
+        return Response(old_games)
