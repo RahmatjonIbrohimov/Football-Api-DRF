@@ -1,1 +1,1 @@
-from django.urls import pathfrom . import viewsurlpatterns = [    path('', views.FlashScoreDataAPIView.as_view(), name='Data Page'),]
+from django.urls import pathfrom . import viewsurlpatterns = [    path('', views.FootballMatchesAPIView.as_view(), name='Data Page'),    # path('another/', views.FootballMatchesAnotherFieldAPIView.as_view(), name='Another Fileds'),    path('finished/', views.FootballFinishedMatchAPIView.as_view(), name='Finished Match'),]
